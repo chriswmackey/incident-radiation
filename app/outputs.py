@@ -4,6 +4,7 @@ import json
 import pathlib
 import streamlit as st
 
+from honeybee.units import conversion_factor_to_meters
 from honeybee_vtk.model import Model as VTKModel, SensorGridOptions, DisplayMode
 from pollination_streamlit_io import send_geometry
 from pollination_streamlit_viewer import viewer
@@ -100,13 +101,20 @@ def display_results(host, target_folder, user_id, rad_values, container):
     else:  # write the radiation values to files
         if not rad_values:
             return
+        # report the total radiation (or average irradiance)
+        hb_model = st.session_state.hb_model
+        face_areas = st.session_state.simulation_geo.face_areas
+        unit_conv = conversion_factor_to_meters(hb_model.units) ** 2
+        total = 0
+        for rad, area in zip(rad_values, face_areas):
+            total += rad * area * unit_conv
+        container.header('Total Radiation: {:,.0f} kWh'.format(total))
         # set up the result folders
         res_folder = os.path.join(target_folder, 'data', user_id, 'results')
         if not os.path.isdir(res_folder):
             os.mkdir(res_folder)
         res_path = pathlib.Path(res_folder).resolve()
         if st.session_state.vtk_path is None:
-            hb_model = st.session_state.hb_model
             write_result_files(res_folder, hb_model, rad_values)
             cfg_file = get_vtk_config(res_path, rad_values)
             get_vtk_model_result(res_path.parent, cfg_file, hb_model, container)

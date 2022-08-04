@@ -28,6 +28,7 @@ PATCH_ROW_COEFF = {
     1: view_sphere.TREGENZA_COEFFICIENTS,
     2: view_sphere.REINHART_COEFFICIENTS
 }
+assert rad_folders.radbin_path is not None, 'Failed to find the Radiance installation.'
 gendaymtx_exe = os.path.join(rad_folders.radbin_path, 'gendaymtx.exe') if \
     os.name == 'nt' else os.path.join(rad_folders.radbin_path, 'gendaymtx')
 
